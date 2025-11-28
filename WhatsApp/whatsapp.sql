@@ -1,0 +1,52 @@
+-- whatsapp.sql
+CREATE DATABASE IF NOT EXISTS `Whatsapp` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE `Whatsapp`;
+
+CREATE TABLE IF NOT EXISTS tb_usuarios (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nome VARCHAR(100) NOT NULL,
+  email VARCHAR(150) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  avatar VARCHAR(255) DEFAULT NULL,
+  ultimo_acesso DATETIME DEFAULT CURRENT_TIMESTAMP,
+  digitando TINYINT(1) DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS tb_salas (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nome VARCHAR(100) NOT NULL,
+  descricao VARCHAR(255) DEFAULT NULL,
+  criada_por INT DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS tb_chat (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  id_sala INT NOT NULL,
+  user_id INT NOT NULL,
+  nome VARCHAR(100) NOT NULL,
+  mensagem TEXT,
+  arquivo VARCHAR(255),
+  data DATETIME DEFAULT CURRENT_TIMESTAMP,
+  edited_at DATETIME DEFAULT NULL,
+  deleted TINYINT(1) DEFAULT 0,
+  FOREIGN KEY (id_sala) REFERENCES tb_salas(id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES tb_usuarios(id) ON DELETE CASCADE,
+  INDEX (id_sala),
+  INDEX (user_id),
+  INDEX (data)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS tb_reacoes (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  id_msg INT NOT NULL,
+  user_id INT NOT NULL,
+  emoji VARCHAR(64) NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (id_msg) REFERENCES tb_chat(id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES tb_usuarios(id) ON DELETE CASCADE,
+  UNIQUE KEY uniq_reacao (id_msg,user_id,emoji)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- seed salas
+INSERT INTO tb_salas (nome, descricao) VALUES ('Geral','Sala Geral'),('Tecnologia','Discussões técnicas')
+ON DUPLICATE KEY UPDATE nome=VALUES(nome);
